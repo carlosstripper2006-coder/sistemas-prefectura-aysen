@@ -213,18 +213,17 @@
     let p = 0;
     if (/natural|neural|premium|enhanced|siri/.test(n)) p += 60;
     if (n.includes('google')) p += 45;
-    if (/mónica|monica|paulina|luciana|esperanza|helena|elvira|isidora|catalina|lucía|lucia/.test(n)) p += 25;
+    if (/paulina|luciana|esperanza|helena|elvira|isidora|catalina|lucía|lucia/.test(n)) p += 25;
     if (/sabina|jorge|diego|raul|raúl|pablo/.test(n)) p += 5;
     if (lang === 'es-cl') p += 20;
     else if (lang === 'es-mx' || lang === 'es-us' || lang === 'es-ar') p += 14;
-    else if (lang === 'es-es') p += 8;
     if (v.localService) p += 6;
     return p;
   }
 
   function cargarVoces(){
     vocesEs = speechSynthesis.getVoices()
-      .filter(v => v.lang && v.lang.toLowerCase().startsWith('es'))
+      .filter(v => v.lang && v.lang.toLowerCase().startsWith('es') && v.lang.toLowerCase() !== 'es-es')
       .sort((a,b) => puntuarVoz(b) - puntuarVoz(a));
     if (!vozElegida && vocesEs.length) vozElegida = vocesEs[0];
     poblarSelectorVoz();
