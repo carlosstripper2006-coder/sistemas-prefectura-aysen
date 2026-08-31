@@ -83,9 +83,19 @@
     aplicarTema(btn.dataset.tema);
     obtenerAudioCtx();
     speechSynthesis.cancel();
-    mostrarEscena('escena-mic');
-    setTimeout(() => reproducirConFallback('instruccion', 'Dime una palabra y la escribimos juntos'), 200);
+    irAJugarOElegirPremio();
   });
+
+  function irAJugarOElegirPremio(){
+    const activas = metas.filter(m => m.estado === 'activa');
+    if (activas.length){
+      construirGrillaElegirPremio(activas);
+      mostrarEscena('escena-elegir-premio');
+    } else {
+      mostrarEscena('escena-mic');
+      setTimeout(() => reproducirConFallback('instruccion', 'Dime una palabra y la escribimos juntos'), 200);
+    }
+  }
 
   document.getElementById('grilla-temas-ajustes').addEventListener('click', (e) => {
     const btn = e.target.closest('.boton-tema');
@@ -476,6 +486,13 @@
     return modo === 'total' ? 'total acumulado' : modo === 'periodo' ? 'por período' : 'racha de días seguidos';
   }
 
+  // El ícono del premio empieza apagado (gris) y se va "encendiendo" a color con el progreso.
+  function aplicarEstiloProgresoIcono(el, progreso, cantidad){
+    const proporcion = Math.min(1, progreso / (cantidad || 1));
+    el.style.filter = `grayscale(${1 - proporcion})`;
+    el.style.opacity = String(0.4 + proporcion * 0.6);
+  }
+
   const panelPremios = document.getElementById('panel-premios');
   const listaMetasEl = document.getElementById('lista-metas');
   const btnNuevaMeta = document.getElementById('btn-nueva-meta');
@@ -536,6 +553,7 @@
         const icono = document.createElement('span');
         icono.className = 'fila-meta-icono';
         icono.textContent = m.icono || '🎁';
+        aplicarEstiloProgresoIcono(icono, m.progreso, m.cantidad);
         const nombre = document.createElement('span');
         nombre.className = 'fila-meta-premio';
         nombre.textContent = m.premio;
@@ -595,6 +613,50 @@
     renderMetas();
     panelPremios.hidden = false;
   }
+
+  // Pantalla donde el niño elige por qué premio quiere jugar esta vez.
+  function construirGrillaElegirPremio(activas){
+    const cont = document.getElementById('grilla-elegir-premio');
+    cont.innerHTML = '';
+    activas.forEach(m => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'premio-elegir-btn';
+
+      const emoji = document.createElement('span');
+      emoji.className = 'premio-elegir-emoji';
+      emoji.textContent = m.icono || '🎁';
+      aplicarEstiloProgresoIcono(emoji, m.progreso, m.cantidad);
+
+      const nombre = document.createElement('span');
+      nombre.className = 'premio-elegir-nombre';
+      nombre.textContent = m.premio;
+
+      const faltan = Math.max(0, m.cantidad - m.progreso);
+      const restante = document.createElement('span');
+      restante.className = 'premio-elegir-restante';
+      restante.textContent = faltan === 1 ? 'Falta 1 palabra' : `Faltan ${faltan} palabras`;
+
+      btn.appendChild(emoji);
+      btn.appendChild(nombre);
+      btn.appendChild(restante);
+      btn.addEventListener('click', () => seleccionarPremioParaJugar(m));
+      cont.appendChild(btn);
+    });
+  }
+
+  function seleccionarPremioParaJugar(meta){
+    const faltan = Math.max(0, meta.cantidad - meta.progreso);
+    const frase = faltan > 0
+      ? `¡Ok! Seleccionaste ${meta.premio}. Necesitas ${faltan} ${faltan === 1 ? 'palabra' : 'palabras'} más. ¡A jugar!`
+      : `¡Ok! Seleccionaste ${meta.premio}. ¡Ya casi lo tienes! ¡A jugar!`;
+    hablar(frase, { alTerminar: () => mostrarEscena('escena-mic') });
+  }
+
+  document.getElementById('btn-saltar-premio').addEventListener('click', () => {
+    mostrarEscena('escena-mic');
+    setTimeout(() => reproducirConFallback('instruccion', 'Dime una palabra y la escribimos juntos'), 200);
+  });
 
   btnNuevaMeta.addEventListener('click', () => {
     formNuevaMeta.hidden = false;
