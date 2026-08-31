@@ -197,6 +197,8 @@
     if (panel) panel.hidden = true;
     const panelP = document.getElementById('panel-premios');
     if (panelP) panelP.hidden = true;
+    const avatarEnvoltorio = document.getElementById('avatar-envoltorio');
+    if (avatarEnvoltorio) avatarEnvoltorio.hidden = (id !== 'escena-deletrear');
     const pasos = {'escena-mic':0, 'escena-confirmar':1, 'escena-deletrear':2, 'escena-celebrar':2};
     const paso = pasos[id] ?? 0;
     puntos.forEach((p,i) => p.classList.toggle('activo', i <= paso));
@@ -487,6 +489,7 @@
   const btnCerrarPremios = document.getElementById('btn-cerrar-premios');
 
   let modoMetaNueva = 'total';
+  let iconoMetaNueva = '🍦';
 
   function actualizarSegmentadoMeta(){
     document.querySelectorAll('#segmentado-modo-meta .segmento').forEach(btn => {
@@ -498,6 +501,18 @@
       modoMetaNueva = btn.dataset.modo;
       actualizarSegmentadoMeta();
       campoPeriodoMeta.hidden = modoMetaNueva !== 'periodo';
+    });
+  });
+
+  function actualizarSelectorIconos(){
+    document.querySelectorAll('#selector-iconos-premio .icono-premio-btn').forEach(btn => {
+      btn.classList.toggle('activo', btn.dataset.icono === iconoMetaNueva);
+    });
+  }
+  document.querySelectorAll('#selector-iconos-premio .icono-premio-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      iconoMetaNueva = btn.dataset.icono;
+      actualizarSelectorIconos();
     });
   });
 
@@ -518,12 +533,17 @@
 
         const top = document.createElement('div');
         top.className = 'fila-meta-top';
+        const icono = document.createElement('span');
+        icono.className = 'fila-meta-icono';
+        icono.textContent = m.icono || '🎁';
         const nombre = document.createElement('span');
         nombre.className = 'fila-meta-premio';
         nombre.textContent = m.premio;
+        nombre.style.flex = '1';
         const progresoTxt = document.createElement('span');
         progresoTxt.className = 'fila-meta-progreso';
         progresoTxt.textContent = `${Math.min(m.progreso, m.cantidad)}/${m.cantidad}`;
+        top.appendChild(icono);
         top.appendChild(nombre);
         top.appendChild(progresoTxt);
         fila.appendChild(top);
@@ -582,6 +602,8 @@
     inputCantidadMeta.value = '10';
     modoMetaNueva = 'total';
     actualizarSegmentadoMeta();
+    iconoMetaNueva = '🍦';
+    actualizarSelectorIconos();
     campoPeriodoMeta.hidden = true;
     inputPeriodoDias.value = '7';
     inputPremio.focus();
@@ -596,6 +618,7 @@
     const nueva = {
       id: 'm' + Date.now(),
       premio,
+      icono: iconoMetaNueva,
       cantidad,
       modo: modoMetaNueva,
       progreso: 0,
@@ -620,8 +643,8 @@
     if (!logrados.length){ el.hidden = true; return; }
     el.hidden = false;
     el.textContent = logrados.length === 1
-      ? `🎁 ¡Ganaste tu premio: ${logrados[0].premio}!`
-      : `🎁 ¡Ganaste ${logrados.length} premios! Cuéntaselo a mamá y a papá.`;
+      ? `${logrados[0].icono || '🎁'} ¡Ganaste tu premio: ${logrados[0].premio}!`
+      : `${logrados.map(m => m.icono || '🎁').join(' ')} ¡Ganaste ${logrados.length} premios! Cuéntaselo a mamá y a papá.`;
   }
 
   // --- audio: efectos sintéticos (respaldo) ---
@@ -824,8 +847,26 @@
     pointer = 0;
     construirSlots();
     construirAlfabeto();
+    document.getElementById('ilustracion-referencia').textContent = ILUSTRACIONES[normalizar(palabra)] || '✨';
+    actualizarIlustracionReferencia();
     mostrarEscena('escena-deletrear');
     hablar('Ahora escribamos la palabra. Toca las letras en orden.');
+  }
+
+  // La imagen de referencia empieza borrosa y en gris, y se va revelando
+  // a color y nítida a medida que se completan las letras.
+  function actualizarIlustracionReferencia(){
+    const el = document.getElementById('ilustracion-referencia');
+    if (!el) return;
+    const total = wordArr.length || 1;
+    const proporcion = Math.min(1, pointer / total);
+    const desenfoque = (1 - proporcion) * 10;
+    const gris = 1 - proporcion;
+    const opacidad = 0.35 + proporcion * 0.65;
+    const escala = 0.85 + proporcion * 0.15;
+    el.style.filter = `blur(${desenfoque}px) grayscale(${gris})`;
+    el.style.opacity = opacidad;
+    el.style.transform = `scale(${escala})`;
   }
 
   function construirSlots(){
@@ -900,6 +941,7 @@
       slotEl.classList.add('lleno');
       decirLetra(letra);
       pointer++;
+      actualizarIlustracionReferencia();
       if (pointer === wordArr.length){
         setTimeout(() => celebrar(palabraActual), 750);
       }

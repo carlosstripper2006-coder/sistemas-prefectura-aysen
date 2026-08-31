@@ -55,6 +55,14 @@
     <button id="btn-nueva-meta" class="btn-probar btn-ancho">+ Nueva meta</button>
 
     <div id="form-nueva-meta" class="form-meta" hidden>
+      <label>Dibujo del premio</label>
+      <div class="selector-iconos" id="selector-iconos-premio" role="group" aria-label="Elegir dibujo del premio">
+        <button type="button" class="icono-premio-btn" data-icono="🍦" aria-label="Helado">🍦</button>
+        <button type="button" class="icono-premio-btn" data-icono="🍫" aria-label="Chocolate">🍫</button>
+        <button type="button" class="icono-premio-btn" data-icono="🛝" aria-label="Parque">🛝</button>
+        <button type="button" class="icono-premio-btn" data-icono="🎁" aria-label="Caja sorpresa">🎁</button>
+      </div>
+
       <label for="input-premio">Premio</label>
       <input type="text" id="input-premio" placeholder="ej: Helado" autocomplete="off">
 
@@ -80,6 +88,10 @@
     </div>
 
     <button id="btn-cerrar-premios" class="btn-probar btn-ancho">Cerrar</button>
+  </div>
+
+  <div class="avatar-envoltorio" id="avatar-envoltorio" hidden>
+    <div class="avatar" id="avatar" aria-hidden="true">🐶</div>
   </div>
 
   <div class="tarjeta">
@@ -124,7 +136,7 @@
     </section>
 
     <section id="escena-deletrear" class="escena" hidden>
-      <div class="avatar" id="avatar" aria-hidden="true">🐶</div>
+      <div class="ilustracion-referencia" id="ilustracion-referencia"></div>
       <div class="slots" id="slots"></div>
       <div class="alfabeto" id="alfabeto"></div>
     </section>
