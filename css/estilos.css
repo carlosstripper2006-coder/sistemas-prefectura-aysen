@@ -201,6 +201,105 @@ body{
   color: white;
 }
 
+.btn-ancho{ width:100%; margin-top:12px; }
+
+/* --- Premios (panel oculto para los papás) --- */
+.fila-meta{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  padding:12px;
+  border-radius:14px;
+  background: #F8F2E2;
+  margin-bottom:10px;
+  text-align:left;
+}
+.fila-meta.cumplida{
+  background: linear-gradient(160deg, rgba(255,107,74,0.16), rgba(255,107,74,0.06));
+  border:2px solid var(--coral);
+}
+.fila-meta-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+.fila-meta-premio{
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  font-size:1rem;
+  color: var(--tinta);
+}
+.fila-meta-progreso{
+  font-size:0.85rem;
+  color: var(--tinta-suave);
+  font-weight:600;
+  margin:0;
+}
+.barra-meta{
+  height:8px;
+  border-radius:5px;
+  background: var(--atenuado);
+  overflow:hidden;
+}
+.barra-meta-relleno{
+  height:100%;
+  background: linear-gradient(90deg, var(--coral), var(--teal));
+  transition: width .3s ease;
+}
+.fila-meta-acciones{ display:flex; gap:14px; margin-top:2px; }
+.btn-texto-mini{
+  background:none;
+  border:none;
+  color: var(--teal-oscuro);
+  font-family:'Quicksand',sans-serif;
+  font-weight:700;
+  font-size:0.82rem;
+  cursor:pointer;
+  text-decoration: underline;
+  text-underline-offset:2px;
+  padding:0;
+}
+.btn-texto-mini.eliminar{ color: var(--rojo-oscuro); }
+
+.form-meta{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:14px;
+  text-align:left;
+}
+.form-meta label{
+  font-size:0.82rem;
+  font-weight:700;
+  color: var(--tinta-suave);
+}
+.form-meta input[type="text"],
+.form-meta input[type="number"]{
+  width:100%;
+  padding:10px 12px;
+  border-radius:14px;
+  border:2px solid var(--atenuado);
+  font-family:'Quicksand',sans-serif;
+  font-size:0.95rem;
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+.premio-logrado{
+  margin-top:2px;
+  margin-bottom:6px;
+  background: linear-gradient(160deg, rgba(255,107,74,0.16), rgba(255,107,74,0.06));
+  border:2px solid var(--coral);
+  border-radius:16px;
+  padding:12px 16px;
+  font-family:'Baloo 2', sans-serif;
+  font-weight:700;
+  color: var(--coral-oscuro);
+  font-size:0.95rem;
+  max-width:280px;
+}
+
 /* --- Escena micrófono --- */
 .mic-btn{
   width:112px; height:112px;

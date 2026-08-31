@@ -13,7 +13,7 @@
 
 <div class="app">
   <div class="barra">
-    <h1>Taller de Letras</h1>
+    <h1 id="titulo-app">Taller de Letras</h1>
     <div class="barra-derecha">
       <div class="progreso" id="progreso">
         <span class="punto"></span><span class="punto"></span><span class="punto"></span>
@@ -36,6 +36,39 @@
       <button type="button" class="segmento" data-modo="nombre">Nombre de la letra</button>
       <button type="button" class="segmento" data-modo="sonido">Sonido de la letra</button>
     </div>
+  </div>
+
+  <div id="panel-premios" class="panel-voz" hidden>
+    <p class="panel-titulo">Premios de mamá y papá</p>
+    <div id="lista-metas"></div>
+    <button id="btn-nueva-meta" class="btn-probar btn-ancho">+ Nueva meta</button>
+
+    <div id="form-nueva-meta" class="form-meta" hidden>
+      <label for="input-premio">Premio</label>
+      <input type="text" id="input-premio" placeholder="ej: Helado" autocomplete="off">
+
+      <label for="input-cantidad-meta">Cantidad de palabras</label>
+      <input type="number" id="input-cantidad-meta" min="1" value="10">
+
+      <label>Cómo se cuenta</label>
+      <div class="segmentado" id="segmentado-modo-meta" role="group" aria-label="Elegir cómo se cuenta la meta">
+        <button type="button" class="segmento" data-modo="total">Total</button>
+        <button type="button" class="segmento" data-modo="periodo">Período</button>
+        <button type="button" class="segmento" data-modo="racha">Racha</button>
+      </div>
+
+      <div id="campo-periodo-meta" hidden>
+        <label for="input-periodo-dias">Cada cuántos días</label>
+        <input type="number" id="input-periodo-dias" min="1" value="7">
+      </div>
+
+      <div class="panel-acciones">
+        <button id="btn-guardar-meta" class="btn-probar">Guardar meta</button>
+        <button id="btn-cancelar-meta" class="btn-probar">Cancelar</button>
+      </div>
+    </div>
+
+    <button id="btn-cerrar-premios" class="btn-probar btn-ancho">Cerrar</button>
   </div>
 
   <div class="tarjeta">
@@ -86,6 +119,7 @@
     <section id="escena-celebrar" class="escena" hidden>
       <div class="ilustracion" id="ilustracion"></div>
       <p class="palabra-grande" id="palabra-final"></p>
+      <div id="premio-logrado" class="premio-logrado" hidden></div>
       <button id="btn-otra" class="btn-primario">Otra palabra</button>
     </section>
 

@@ -60,6 +60,8 @@
     barraProgreso.style.visibility = (id === 'escena-bienvenida') ? 'hidden' : 'visible';
     const panel = document.getElementById('panel-voz');
     if (panel) panel.hidden = true;
+    const panelP = document.getElementById('panel-premios');
+    if (panelP) panelP.hidden = true;
     const pasos = {'escena-mic':0, 'escena-confirmar':1, 'escena-deletrear':2, 'escena-celebrar':2};
     const paso = pasos[id] ?? 0;
     puntos.forEach((p,i) => p.classList.toggle('activo', i <= paso));
@@ -256,6 +258,224 @@
     const archivo = (modoLetra === 'sonido' ? 'sonido-' : 'letra-') + clave;
     const textoFallback = modoLetra === 'sonido' ? letra.toLowerCase() : (NOMBRE_LETRA[letra] || letra.toLowerCase());
     reproducirConFallback(archivo, textoFallback);
+  }
+
+  // --- premios: metas que cargan mamá y papá ---
+  const METAS_KEY = 'taller-letras-metas';
+  let metas = [];
+  try{
+    const guardado = JSON.parse(localStorage.getItem(METAS_KEY) || '[]');
+    if (Array.isArray(guardado)) metas = guardado;
+  }catch(e){}
+
+  function guardarMetas(){
+    try{ localStorage.setItem(METAS_KEY, JSON.stringify(metas)); }catch(e){}
+  }
+
+  function hoyISO(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function diasEntre(a, b){
+    return Math.round((new Date(b) - new Date(a)) / 86400000);
+  }
+
+  // Suma el progreso de cada meta activa según su modo de conteo y devuelve
+  // las que se acaban de cumplir con esta palabra.
+  function registrarPalabraLograda(){
+    const hoy = hoyISO();
+    const cumplidasAhora = [];
+    metas.forEach(m => {
+      if (m.estado !== 'activa') return;
+      if (m.modo === 'total'){
+        m.progreso++;
+      } else if (m.modo === 'periodo'){
+        if (!m.inicioPeriodo || diasEntre(m.inicioPeriodo, hoy) >= (m.periodoDias || 7)){
+          m.progreso = 0;
+          m.inicioPeriodo = hoy;
+        }
+        m.progreso++;
+      } else if (m.modo === 'racha'){
+        if (!m.ultimoDia || diasEntre(m.ultimoDia, hoy) === 1){
+          m.progreso++;
+        } else if (m.ultimoDia !== hoy){
+          m.progreso = 1;
+        }
+        m.ultimoDia = hoy;
+      }
+      if (m.progreso >= m.cantidad){
+        m.estado = 'cumplida-pendiente';
+        m.fechaCumplida = hoy;
+        cumplidasAhora.push(m);
+      }
+    });
+    guardarMetas();
+    return cumplidasAhora;
+  }
+
+  function etiquetaModoMeta(modo){
+    return modo === 'total' ? 'total acumulado' : modo === 'periodo' ? 'por período' : 'racha de días seguidos';
+  }
+
+  const panelPremios = document.getElementById('panel-premios');
+  const listaMetasEl = document.getElementById('lista-metas');
+  const btnNuevaMeta = document.getElementById('btn-nueva-meta');
+  const formNuevaMeta = document.getElementById('form-nueva-meta');
+  const inputPremio = document.getElementById('input-premio');
+  const inputCantidadMeta = document.getElementById('input-cantidad-meta');
+  const campoPeriodoMeta = document.getElementById('campo-periodo-meta');
+  const inputPeriodoDias = document.getElementById('input-periodo-dias');
+  const btnGuardarMeta = document.getElementById('btn-guardar-meta');
+  const btnCancelarMeta = document.getElementById('btn-cancelar-meta');
+  const btnCerrarPremios = document.getElementById('btn-cerrar-premios');
+
+  let modoMetaNueva = 'total';
+
+  function actualizarSegmentadoMeta(){
+    document.querySelectorAll('#segmentado-modo-meta .segmento').forEach(btn => {
+      btn.classList.toggle('activo', btn.dataset.modo === modoMetaNueva);
+    });
+  }
+  document.querySelectorAll('#segmentado-modo-meta .segmento').forEach(btn => {
+    btn.addEventListener('click', () => {
+      modoMetaNueva = btn.dataset.modo;
+      actualizarSegmentadoMeta();
+      campoPeriodoMeta.hidden = modoMetaNueva !== 'periodo';
+    });
+  });
+
+  function renderMetas(){
+    listaMetasEl.innerHTML = '';
+    if (!metas.length){
+      const p = document.createElement('p');
+      p.className = 'fila-meta-progreso';
+      p.textContent = 'Todavía no hay metas. Creen la primera.';
+      listaMetasEl.appendChild(p);
+      return;
+    }
+    metas.slice()
+      .sort((a,b) => (a.estado === b.estado ? 0 : a.estado === 'cumplida-pendiente' ? -1 : 1))
+      .forEach(m => {
+        const fila = document.createElement('div');
+        fila.className = 'fila-meta' + (m.estado === 'cumplida-pendiente' ? ' cumplida' : '');
+
+        const top = document.createElement('div');
+        top.className = 'fila-meta-top';
+        const nombre = document.createElement('span');
+        nombre.className = 'fila-meta-premio';
+        nombre.textContent = m.premio;
+        const progresoTxt = document.createElement('span');
+        progresoTxt.className = 'fila-meta-progreso';
+        progresoTxt.textContent = `${Math.min(m.progreso, m.cantidad)}/${m.cantidad}`;
+        top.appendChild(nombre);
+        top.appendChild(progresoTxt);
+        fila.appendChild(top);
+
+        const barra = document.createElement('div');
+        barra.className = 'barra-meta';
+        const relleno = document.createElement('div');
+        relleno.className = 'barra-meta-relleno';
+        relleno.style.width = Math.min(100, Math.round((m.progreso / m.cantidad) * 100)) + '%';
+        barra.appendChild(relleno);
+        fila.appendChild(barra);
+
+        const nota = document.createElement('p');
+        nota.className = 'fila-meta-progreso';
+        nota.textContent = m.estado === 'cumplida-pendiente' ? '¡Cumplida! Falta entregar.' : ('Meta: ' + etiquetaModoMeta(m.modo));
+        fila.appendChild(nota);
+
+        const acciones = document.createElement('div');
+        acciones.className = 'fila-meta-acciones';
+        if (m.estado === 'cumplida-pendiente'){
+          const btnEntregado = document.createElement('button');
+          btnEntregado.className = 'btn-texto-mini';
+          btnEntregado.textContent = '✓ Marcar entregado';
+          btnEntregado.addEventListener('click', () => {
+            metas = metas.filter(x => x.id !== m.id);
+            guardarMetas();
+            renderMetas();
+          });
+          acciones.appendChild(btnEntregado);
+        }
+        const btnEliminar = document.createElement('button');
+        btnEliminar.className = 'btn-texto-mini eliminar';
+        btnEliminar.textContent = 'Eliminar';
+        btnEliminar.addEventListener('click', () => {
+          metas = metas.filter(x => x.id !== m.id);
+          guardarMetas();
+          renderMetas();
+        });
+        acciones.appendChild(btnEliminar);
+        fila.appendChild(acciones);
+
+        listaMetasEl.appendChild(fila);
+      });
+  }
+
+  function abrirPanelPremios(){
+    panelVoz.hidden = true;
+    formNuevaMeta.hidden = true;
+    renderMetas();
+    panelPremios.hidden = false;
+  }
+
+  btnNuevaMeta.addEventListener('click', () => {
+    formNuevaMeta.hidden = false;
+    inputPremio.value = '';
+    inputCantidadMeta.value = '10';
+    modoMetaNueva = 'total';
+    actualizarSegmentadoMeta();
+    campoPeriodoMeta.hidden = true;
+    inputPeriodoDias.value = '7';
+    inputPremio.focus();
+  });
+
+  btnCancelarMeta.addEventListener('click', () => { formNuevaMeta.hidden = true; });
+
+  btnGuardarMeta.addEventListener('click', () => {
+    const premio = inputPremio.value.trim();
+    const cantidad = parseInt(inputCantidadMeta.value, 10);
+    if (!premio || !cantidad || cantidad < 1) return;
+    const nueva = {
+      id: 'm' + Date.now(),
+      premio,
+      cantidad,
+      modo: modoMetaNueva,
+      progreso: 0,
+      estado: 'activa'
+    };
+    if (modoMetaNueva === 'periodo'){
+      nueva.periodoDias = parseInt(inputPeriodoDias.value, 10) || 7;
+      nueva.inicioPeriodo = hoyISO();
+    }
+    metas.push(nueva);
+    guardarMetas();
+    formNuevaMeta.hidden = true;
+    renderMetas();
+  });
+
+  btnCerrarPremios.addEventListener('click', () => { panelPremios.hidden = true; });
+
+  // Acceso oculto: mantener apretado el título 3 segundos abre el panel de premios.
+  let esperaPremios = null;
+  const tituloApp = document.getElementById('titulo-app');
+  tituloApp.addEventListener('pointerdown', () => {
+    esperaPremios = setTimeout(abrirPanelPremios, 3000);
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev => {
+    tituloApp.addEventListener(ev, () => {
+      if (esperaPremios){ clearTimeout(esperaPremios); esperaPremios = null; }
+    });
+  });
+
+  function mostrarPremioLogrado(logrados){
+    const el = document.getElementById('premio-logrado');
+    if (!logrados.length){ el.hidden = true; return; }
+    el.hidden = false;
+    el.textContent = logrados.length === 1
+      ? `🎁 ¡Ganaste tu premio: ${logrados[0].premio}!`
+      : `🎁 ¡Ganaste ${logrados.length} premios! Cuéntaselo a mamá y a papá.`;
   }
 
   // --- audio: efectos sintéticos (respaldo) ---
@@ -570,6 +790,7 @@
     palabraFinalEl.textContent = palabra.toUpperCase();
     reproducirConFallback('logrado', `¡Muy bien, ${NOMBRE_NINO}! Escribiste ${palabra}`);
     if (!reduceMovimiento) lanzarConfeti();
+    mostrarPremioLogrado(registrarPalabraLograda());
   }
 
   function lanzarConfeti(){
