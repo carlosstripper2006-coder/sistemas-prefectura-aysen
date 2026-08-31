@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Taller de Letras</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+<div class="app">
+  <div class="barra">
+    <h1>Taller de Letras</h1>
+    <div class="barra-derecha">
+      <div class="progreso" id="progreso">
+        <span class="punto"></span><span class="punto"></span><span class="punto"></span>
+      </div>
+      <button id="btn-ajustes" class="btn-ajustes" aria-label="Ajustes de voz">⚙</button>
+    </div>
+  </div>
+
+  <div id="panel-voz" class="panel-voz" hidden>
+    <p class="panel-titulo">Voz</p>
+    <select id="selector-voz" aria-label="Elegir voz"></select>
+    <div class="panel-acciones">
+      <button id="btn-probar-sonido" class="btn-probar">🔊 Probar</button>
+      <button id="btn-cerrar-panel" class="btn-probar">Cerrar</button>
+    </div>
+    <p class="estado" id="estado-sonido" aria-live="polite"></p>
+
+    <p class="panel-titulo" style="margin-top:16px;">Al acertar una letra, decir</p>
+    <div class="segmentado" id="segmentado-modo-letra" role="group" aria-label="Elegir qué se dice al acertar una letra">
+      <button type="button" class="segmento" data-modo="nombre">Nombre de la letra</button>
+      <button type="button" class="segmento" data-modo="sonido">Sonido de la letra</button>
+    </div>
+  </div>
+
+  <div class="tarjeta">
+
+    <section id="escena-bienvenida" class="escena">
+      <div class="saludo-mano">👋</div>
+      <p class="saludo-titulo" id="saludo-titulo">¡Hola, Joaquín!</p>
+      <p class="saludo-texto">Dime una palabra y la escribimos juntos, letra por letra.</p>
+      <button id="btn-comenzar" class="btn-primario">Comenzar</button>
+    </section>
+
+    <section id="escena-mic" class="escena" hidden>
+      <p class="instruccion">Toca el micrófono y di la palabra que quieres escribir</p>
+      <button id="btn-mic" class="mic-btn" aria-label="Grabar palabra">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M19 11a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V22h2v-2.06A9 9 0 0 0 21 11h-2z"/></svg>
+      </button>
+      <p class="estado" id="estado-mic" aria-live="polite"></p>
+
+      <div class="fallback" id="fallback-texto" hidden>
+        <p class="fallback-nota">Modo de prueba: escribe la palabra</p>
+        <input type="text" id="input-palabra" placeholder="ej: hola" autocomplete="off">
+        <button id="btn-usar-texto" class="btn-secundario">Usar esta palabra</button>
+      </div>
+    </section>
+
+    <section id="escena-confirmar" class="escena" hidden>
+      <p class="instruccion">Escuché...</p>
+      <p class="palabra-grande" id="palabra-escuchada"></p>
+      <button id="btn-repetir-audio" class="btn-mini">🔊 Escuchar de nuevo</button>
+      <button id="btn-mi-voz" class="btn-mini" hidden>🎧 Escuchar mi voz</button>
+      <div class="botones-confirmar">
+        <button id="btn-si" class="btn-confirmar btn-si" aria-label="Sí, es correcto">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M2 21h3V10H2v11zm19-10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L11.17 2 5.59 7.59C5.22 7.95 5 8.45 5 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91z"/></svg>
+          <span>Sí</span>
+        </button>
+        <button id="btn-no" class="btn-confirmar btn-no" aria-label="No, inténtalo de nuevo">
+          <svg viewBox="0 0 24 24" fill="white"><path d="M22 3h-3v11h3V3zM3 13c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L12.83 22l5.58-5.59c.37-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H8c-.83 0-1.54.5-1.84 1.22L3.14 11.27C3.05 11.5 3 11.74 3 12v1z"/></svg>
+          <span>No</span>
+        </button>
+      </div>
+    </section>
+
+    <section id="escena-deletrear" class="escena" hidden>
+      <div class="slots" id="slots"></div>
+      <div class="alfabeto" id="alfabeto"></div>
+    </section>
+
+    <section id="escena-celebrar" class="escena" hidden>
+      <div class="ilustracion" id="ilustracion"></div>
+      <p class="palabra-grande" id="palabra-final"></p>
+      <button id="btn-otra" class="btn-primario">Otra palabra</button>
+    </section>
+
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
