@@ -116,6 +116,50 @@ body{
   line-height:1.45;
 }
 
+/* --- Grilla de selección de tema --- */
+.grilla-temas{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:12px;
+  width:100%;
+  margin-top:6px;
+}
+.boton-tema{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:16px 8px;
+  border-radius:18px;
+  border:2px solid var(--atenuado);
+  background: var(--papel);
+  cursor:pointer;
+  transition: transform .12s ease, border-color .15s ease;
+}
+.boton-tema:active{ transform: scale(0.95); }
+.boton-tema.activo{
+  border-color: var(--teal);
+  box-shadow: 0 4px 14px var(--sombra);
+}
+.boton-tema-emoji{ font-size:2rem; line-height:1; }
+.boton-tema-nombre{
+  font-family:'Quicksand',sans-serif;
+  font-weight:700;
+  font-size:0.82rem;
+  color: var(--tinta-suave);
+}
+.boton-tema-check{
+  position:absolute;
+  top:6px; right:8px;
+  font-size:0.85rem;
+  color: var(--teal);
+  font-weight:800;
+}
+.grilla-temas-chica .boton-tema{ padding:10px 6px; border-radius:14px; }
+.grilla-temas-chica .boton-tema-emoji{ font-size:1.5rem; }
+.grilla-temas-chica .boton-tema-nombre{ font-size:0.7rem; }
+
 .barra-derecha{ display:flex; align-items:center; gap:12px; }
 .btn-ajustes{
   background:none;
@@ -514,4 +558,88 @@ body{
   .mic-btn.escuchando{ animation:none; }
   .letra-tile.error{ animation:none; }
   .letra-volando, .confeti{ transition:none; animation:none; }
+}
+
+/* ============================================================
+   Temas visuales. Cada uno redefine fondo, letras destacadas
+   (--coral/--coral-oscuro) y acento (--teal/--teal-oscuro), más
+   su propio patrón decorativo de fondo. El resto del diseño
+   (tarjeta blanca, tinta, botones Sí/No, etc.) no cambia.
+   ============================================================ */
+
+body.tema-telarana{
+  --crema: #EEF2F8;
+  --coral: #E63946;
+  --coral-oscuro: #C92A3B;
+  --teal: #3B7BC4;
+  --teal-oscuro: #1E4E82;
+  background-image:
+    repeating-radial-gradient(circle at 50% -10%, rgba(30,78,130,0.10) 0 1px, transparent 1px 38px),
+    repeating-conic-gradient(from 0deg at 50% -10%, rgba(201,42,59,0.07) 0deg 1.2deg, transparent 1.2deg 22.5deg);
+}
+
+body.tema-bloques{
+  --crema: #F1E9D8;
+  --coral: #4CAF7D;
+  --coral-oscuro: #3B8C63;
+  --teal: #8B5E3C;
+  --teal-oscuro: #6E4A2E;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(110,74,46,0.10) 0 2px, transparent 2px 28px),
+    repeating-linear-gradient(90deg, rgba(110,74,46,0.10) 0 2px, transparent 2px 28px);
+}
+
+body.tema-carreras{
+  --crema: #F4F4F2;
+  --coral: #2B2B2B;
+  --coral-oscuro: #0D0D0D;
+  --teal: #D6A017;
+  --teal-oscuro: #946200;
+  background-image: repeating-conic-gradient(rgba(13,13,13,0.08) 0% 25%, transparent 0% 50%);
+  background-size: 34px 34px;
+}
+
+body.tema-arcoiris{
+  --crema: #FBF3FA;
+  --coral: #EC4899;
+  --coral-oscuro: #9333EA;
+  --teal: #7C6FE0;
+  --teal-oscuro: #5B4BC4;
+  background-image:
+    radial-gradient(circle at 50% 130%, transparent 60%, rgba(236,72,153,0.12) 61% 65%, transparent 66%),
+    radial-gradient(circle at 50% 130%, transparent 67%, rgba(249,168,37,0.12) 68% 72%, transparent 73%),
+    radial-gradient(circle at 50% 130%, transparent 74%, rgba(250,230,90,0.12) 75% 79%, transparent 80%),
+    radial-gradient(circle at 50% 130%, transparent 81%, rgba(124,207,131,0.12) 82% 86%, transparent 87%),
+    radial-gradient(circle at 50% 130%, transparent 88%, rgba(93,169,233,0.12) 89% 93%, transparent 94%);
+}
+
+body.tema-animales{
+  --crema: #F3E9DC;
+  --coral: #B5651D;
+  --coral-oscuro: #8F4F16;
+  --teal: #7FA35C;
+  --teal-oscuro: #54702E;
+  background-image:
+    radial-gradient(circle, rgba(143,79,22,0.14) 38%, transparent 40%),
+    radial-gradient(circle, rgba(143,79,22,0.14) 38%, transparent 40%),
+    radial-gradient(circle, rgba(143,79,22,0.14) 38%, transparent 40%),
+    radial-gradient(circle, rgba(143,79,22,0.14) 38%, transparent 40%);
+  background-size: 100px 100px, 16px 16px, 16px 16px, 16px 16px;
+  background-position: 0 0, 10px -16px, 24px -11px, 16px -25px;
+}
+
+body.tema-flores{
+  --crema: #FDF0F3;
+  --coral: #E85D8A;
+  --coral-oscuro: #C93F6D;
+  --teal: #7BBF8E;
+  --teal-oscuro: #478A5D;
+  background-image:
+    radial-gradient(circle, rgba(201,63,109,0.14) 32%, transparent 34%),
+    radial-gradient(circle, rgba(201,63,109,0.11) 32%, transparent 34%),
+    radial-gradient(circle, rgba(201,63,109,0.11) 32%, transparent 34%),
+    radial-gradient(circle, rgba(201,63,109,0.11) 32%, transparent 34%),
+    radial-gradient(circle, rgba(71,138,93,0.13) 40%, transparent 42%);
+  background-size: 18px 18px, 18px 18px, 18px 18px, 18px 18px, 64px 64px;
+  background-position: 0 -11px, 10px -3px, -10px -3px, 0 7px, 32px 32px;
 }

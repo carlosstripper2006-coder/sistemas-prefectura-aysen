@@ -22,6 +22,141 @@
 
   const reduceMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // --- temas visuales ---
+  const TEMAS = [
+    { id:'telarana', emoji:'🕸️', nombre:'Telaraña' },
+    { id:'bloques', emoji:'🟩', nombre:'Bloques' },
+    { id:'carreras', emoji:'🏁', nombre:'Carreras' },
+    { id:'arcoiris', emoji:'🌈', nombre:'Arcoíris' },
+    { id:'animales', emoji:'🐾', nombre:'Animales' },
+    { id:'flores', emoji:'🌷', nombre:'Flores' }
+  ];
+  const TEMA_KEY = 'taller-letras-tema';
+  let temaActual = null; // null = tema por defecto (colores del prototipo)
+  try{
+    const guardado = localStorage.getItem(TEMA_KEY);
+    if (TEMAS.some(t => t.id === guardado)) temaActual = guardado;
+  }catch(e){}
+
+  function renderGrillaTemas(contenedorId){
+    const cont = document.getElementById(contenedorId);
+    if (!cont) return;
+    cont.innerHTML = '';
+    TEMAS.forEach(t => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'boton-tema' + (temaActual === t.id ? ' activo' : '');
+      btn.dataset.tema = t.id;
+      const emoji = document.createElement('span');
+      emoji.className = 'boton-tema-emoji';
+      emoji.textContent = t.emoji;
+      const nombre = document.createElement('span');
+      nombre.className = 'boton-tema-nombre';
+      nombre.textContent = t.nombre;
+      btn.appendChild(emoji);
+      btn.appendChild(nombre);
+      if (temaActual === t.id){
+        const check = document.createElement('span');
+        check.className = 'boton-tema-check';
+        check.textContent = '✓';
+        btn.appendChild(check);
+      }
+      cont.appendChild(btn);
+    });
+  }
+
+  function aplicarTema(id){
+    temaActual = id;
+    document.body.className = id ? ('tema-' + id) : '';
+    try{ localStorage.setItem(TEMA_KEY, id || ''); }catch(e){}
+    renderGrillaTemas('grilla-temas');
+    renderGrillaTemas('grilla-temas-ajustes');
+  }
+
+  if (temaActual) document.body.className = 'tema-' + temaActual;
+  renderGrillaTemas('grilla-temas');
+  renderGrillaTemas('grilla-temas-ajustes');
+
+  document.getElementById('grilla-temas').addEventListener('click', (e) => {
+    const btn = e.target.closest('.boton-tema');
+    if (!btn) return;
+    aplicarTema(btn.dataset.tema);
+    obtenerAudioCtx();
+    speechSynthesis.cancel();
+    mostrarEscena('escena-mic');
+    setTimeout(() => reproducirConFallback('instruccion', 'Dime una palabra y la escribimos juntos'), 200);
+  });
+
+  document.getElementById('grilla-temas-ajustes').addEventListener('click', (e) => {
+    const btn = e.target.closest('.boton-tema');
+    if (!btn) return;
+    aplicarTema(btn.dataset.tema);
+  });
+
+  // --- sonidos de acierto/error por tema (Web Audio API) ---
+  function tonoSimple(ctx, opts){
+    const { frecInicial, frecFinal = frecInicial, tipo = 'sine', duracion = 0.15, ganancia = 0.14, retraso = 0 } = opts;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = tipo;
+    const t0 = ctx.currentTime + retraso;
+    o.frequency.setValueAtTime(frecInicial, t0);
+    if (frecFinal !== frecInicial) o.frequency.exponentialRampToValueAtTime(Math.max(frecFinal, 1), t0 + duracion * 0.8);
+    g.gain.setValueAtTime(ganancia, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + duracion);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t0); o.stop(t0 + duracion + 0.02);
+  }
+
+  const SONIDOS_TEMA = {
+    default: {
+      acierto: (ctx) => tonoSimple(ctx, { frecInicial:700, frecFinal:1100, tipo:'sine', duracion:0.16, ganancia:0.15 }),
+      error: (ctx) => tonoSimple(ctx, { frecInicial:180, tipo:'sawtooth', duracion:0.25, ganancia:0.12 })
+    },
+    // Telaraña: acierto "swish" agudo, error como un hilo que se corta.
+    telarana: {
+      acierto: (ctx) => tonoSimple(ctx, { frecInicial:900, frecFinal:2200, tipo:'sine', duracion:0.1, ganancia:0.14 }),
+      error: (ctx) => tonoSimple(ctx, { frecInicial:1200, frecFinal:300, tipo:'sawtooth', duracion:0.15, ganancia:0.12 })
+    },
+    // Bloques: sonidos tipo 8 bits (onda cuadrada, notas cortas).
+    bloques: {
+      acierto: (ctx) => {
+        tonoSimple(ctx, { frecInicial:523, tipo:'square', duracion:0.08, ganancia:0.10 });
+        tonoSimple(ctx, { frecInicial:659, tipo:'square', duracion:0.09, ganancia:0.10, retraso:0.07 });
+      },
+      error: (ctx) => tonoSimple(ctx, { frecInicial:200, frecFinal:100, tipo:'square', duracion:0.18, ganancia:0.10 })
+    },
+    // Carreras: acierto tipo motor corto, error tipo frenazo.
+    carreras: {
+      acierto: (ctx) => {
+        tonoSimple(ctx, { frecInicial:80, frecFinal:220, tipo:'sawtooth', duracion:0.09, ganancia:0.13 });
+        tonoSimple(ctx, { frecInicial:220, frecFinal:140, tipo:'sawtooth', duracion:0.09, ganancia:0.11, retraso:0.08 });
+      },
+      error: (ctx) => tonoSimple(ctx, { frecInicial:1000, frecFinal:150, tipo:'sawtooth', duracion:0.18, ganancia:0.11 })
+    },
+    // Arcoíris: acierto tipo campanita (dos armónicos), error apagado.
+    arcoiris: {
+      acierto: (ctx) => {
+        tonoSimple(ctx, { frecInicial:1046, tipo:'sine', duracion:0.18, ganancia:0.12 });
+        tonoSimple(ctx, { frecInicial:1568, tipo:'sine', duracion:0.16, ganancia:0.08, retraso:0.02 });
+      },
+      error: (ctx) => tonoSimple(ctx, { frecInicial:220, tipo:'sine', duracion:0.22, ganancia:0.10 })
+    },
+    // Animales: acierto silbido suave ascendente, error silbido descendente.
+    animales: {
+      acierto: (ctx) => tonoSimple(ctx, { frecInicial:600, frecFinal:900, tipo:'sine', duracion:0.22, ganancia:0.11 }),
+      error: (ctx) => tonoSimple(ctx, { frecInicial:500, frecFinal:250, tipo:'sine', duracion:0.22, ganancia:0.11 })
+    },
+    // Flores: acierto carillón de tres notas, error una nota grave sola.
+    flores: {
+      acierto: (ctx) => {
+        tonoSimple(ctx, { frecInicial:784, tipo:'sine', duracion:0.14, ganancia:0.1 });
+        tonoSimple(ctx, { frecInicial:988, tipo:'sine', duracion:0.14, ganancia:0.1, retraso:0.06 });
+        tonoSimple(ctx, { frecInicial:1175, tipo:'sine', duracion:0.16, ganancia:0.1, retraso:0.12 });
+      },
+      error: (ctx) => tonoSimple(ctx, { frecInicial:349, tipo:'sine', duracion:0.2, ganancia:0.1 })
+    }
+  };
+
   // --- referencias ---
   const btnMic = document.getElementById('btn-mic');
   const estadoMic = document.getElementById('estado-mic');
@@ -488,26 +623,13 @@
   function sonidoExito(){
     try{
       const ctx = obtenerAudioCtx();
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(700, ctx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.12);
-      g.gain.setValueAtTime(0.15, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(); o.stop(ctx.currentTime + 0.17);
+      (SONIDOS_TEMA[temaActual] || SONIDOS_TEMA.default).acierto(ctx);
     }catch(e){}
   }
   function sonidoError(){
     try{
       const ctx = obtenerAudioCtx();
-      const o = ctx.createOscillator(), g = ctx.createGain();
-      o.type = 'sawtooth';
-      o.frequency.setValueAtTime(180, ctx.currentTime);
-      g.gain.setValueAtTime(0.12, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(); o.stop(ctx.currentTime + 0.26);
+      (SONIDOS_TEMA[temaActual] || SONIDOS_TEMA.default).error(ctx);
     }catch(e){}
   }
   function vibrar(patron){
@@ -881,13 +1003,6 @@
 
   document.getElementById('escena-bienvenida').addEventListener('pointerdown', decirSaludo);
   window.addEventListener('load', () => { setTimeout(decirSaludo, 400); });
-
-  document.getElementById('btn-comenzar').addEventListener('click', () => {
-    obtenerAudioCtx();
-    speechSynthesis.cancel();
-    mostrarEscena('escena-mic');
-    setTimeout(() => reproducirConFallback('instruccion', 'Dime una palabra y la escribimos juntos'), 200);
-  });
 
   mostrarEscena('escena-bienvenida');
 })();

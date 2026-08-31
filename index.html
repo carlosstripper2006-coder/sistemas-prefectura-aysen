@@ -36,6 +36,9 @@
       <button type="button" class="segmento" data-modo="nombre">Nombre de la letra</button>
       <button type="button" class="segmento" data-modo="sonido">Sonido de la letra</button>
     </div>
+
+    <p class="panel-titulo" style="margin-top:16px;">Tema visual</p>
+    <div class="grilla-temas grilla-temas-chica" id="grilla-temas-ajustes"></div>
   </div>
 
   <div id="panel-premios" class="panel-voz" hidden>
@@ -76,8 +79,8 @@
     <section id="escena-bienvenida" class="escena">
       <div class="saludo-mano">👋</div>
       <p class="saludo-titulo" id="saludo-titulo">¡Hola, Joaquín!</p>
-      <p class="saludo-texto">Dime una palabra y la escribimos juntos, letra por letra.</p>
-      <button id="btn-comenzar" class="btn-primario">Comenzar</button>
+      <p class="saludo-texto">Elige tu tema para comenzar</p>
+      <div class="grilla-temas" id="grilla-temas"></div>
     </section>
 
     <section id="escena-mic" class="escena" hidden>
