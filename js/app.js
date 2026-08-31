@@ -387,6 +387,28 @@
   });
   actualizarSegmentado();
 
+  // --- nivel de dificultad: cuántas letras se muestran de pista en los espacios ---
+  const NIVEL_KEY = 'taller-letras-nivel';
+  let nivelDificultad = 'dificil';
+  try{
+    const guardadoNivel = localStorage.getItem(NIVEL_KEY);
+    if (['facil','medio','dificil'].includes(guardadoNivel)) nivelDificultad = guardadoNivel;
+  }catch(e){}
+
+  function actualizarSegmentadoNivel(){
+    document.querySelectorAll('#segmentado-nivel .segmento').forEach(btn => {
+      btn.classList.toggle('activo', btn.dataset.nivel === nivelDificultad);
+    });
+  }
+  document.querySelectorAll('#segmentado-nivel .segmento').forEach(btn => {
+    btn.addEventListener('click', () => {
+      nivelDificultad = btn.dataset.nivel;
+      try{ localStorage.setItem(NIVEL_KEY, nivelDificultad); }catch(e){}
+      actualizarSegmentadoNivel();
+    });
+  });
+  actualizarSegmentadoNivel();
+
   function decirLetra(letra){
     const clave = claveArchivoLetra(letra);
     const archivo = (modoLetra === 'sonido' ? 'sonido-' : 'letra-') + clave;
@@ -591,17 +613,7 @@
 
   btnCerrarPremios.addEventListener('click', () => { panelPremios.hidden = true; });
 
-  // Acceso oculto: mantener apretado el título 3 segundos abre el panel de premios.
-  let esperaPremios = null;
-  const tituloApp = document.getElementById('titulo-app');
-  tituloApp.addEventListener('pointerdown', () => {
-    esperaPremios = setTimeout(abrirPanelPremios, 3000);
-  });
-  ['pointerup','pointerleave','pointercancel'].forEach(ev => {
-    tituloApp.addEventListener(ev, () => {
-      if (esperaPremios){ clearTimeout(esperaPremios); esperaPremios = null; }
-    });
-  });
+  document.getElementById('btn-premios').addEventListener('click', abrirPanelPremios);
 
   function mostrarPremioLogrado(logrados){
     const el = document.getElementById('premio-logrado');
@@ -780,6 +792,7 @@
     if (!limpio) return;
     palabraActual = limpio;
     palabraEscuchadaEl.textContent = limpio.toUpperCase();
+    document.getElementById('ilustracion-confirmar').textContent = ILUSTRACIONES[normalizar(limpio)] || '✨';
     mostrarEscena('escena-confirmar');
     anunciarPalabraEscuchada(limpio);
   }
@@ -817,10 +830,18 @@
 
   function construirSlots(){
     slotsEl.innerHTML = '';
-    wordArr.forEach((_, i) => {
+    wordArr.forEach((letra, i) => {
       const div = document.createElement('div');
       div.className = 'slot';
       div.dataset.index = i;
+      const esPrimera = i === 0;
+      const esUltima = i === wordArr.length - 1;
+      const mostrarPista = (nivelDificultad === 'facil' && (esPrimera || esUltima)) ||
+                            (nivelDificultad === 'medio' && esPrimera);
+      if (mostrarPista){
+        div.textContent = letra;
+        div.classList.add('pista');
+      }
       slotsEl.appendChild(div);
     });
   }
@@ -850,9 +871,18 @@
     }
   }
 
+  function animarAvatar(estado){
+    const avatarEl = document.getElementById('avatar');
+    if (!avatarEl) return;
+    avatarEl.classList.remove('acierto', 'error');
+    void avatarEl.offsetWidth; // fuerza reflow para poder repetir la animación
+    avatarEl.classList.add(estado);
+  }
+
   function error(tileEl){
     sonidoDeError();
     vibrar([60,40,60]);
+    animarAvatar('error');
     tileEl.classList.add('error');
     setTimeout(() => tileEl.classList.remove('error'), 350);
   }
@@ -860,11 +890,13 @@
   function exito(tileEl, idx){
     sonidoAcierto();
     vibrar(40);
+    animarAvatar('acierto');
     const slotEl = slotsEl.children[idx];
     const letra = wordArr[idx];
 
     const terminar = () => {
       slotEl.textContent = letra;
+      slotEl.classList.remove('pista');
       slotEl.classList.add('lleno');
       decirLetra(letra);
       pointer++;

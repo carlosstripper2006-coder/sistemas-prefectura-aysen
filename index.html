@@ -18,6 +18,7 @@
       <div class="progreso" id="progreso">
         <span class="punto"></span><span class="punto"></span><span class="punto"></span>
       </div>
+      <button id="btn-premios" class="btn-ajustes" aria-label="Premios">🎁</button>
       <button id="btn-ajustes" class="btn-ajustes" aria-label="Ajustes de voz">⚙</button>
     </div>
   </div>
@@ -39,6 +40,13 @@
 
     <p class="panel-titulo" style="margin-top:16px;">Tema visual</p>
     <div class="grilla-temas grilla-temas-chica" id="grilla-temas-ajustes"></div>
+
+    <p class="panel-titulo" style="margin-top:16px;">Nivel de dificultad</p>
+    <div class="segmentado" id="segmentado-nivel" role="group" aria-label="Elegir nivel de dificultad">
+      <button type="button" class="segmento" data-nivel="facil">Fácil</button>
+      <button type="button" class="segmento" data-nivel="medio">Medio</button>
+      <button type="button" class="segmento" data-nivel="dificil">Difícil</button>
+    </div>
   </div>
 
   <div id="panel-premios" class="panel-voz" hidden>
@@ -100,6 +108,7 @@
     <section id="escena-confirmar" class="escena" hidden>
       <p class="instruccion">Escuché...</p>
       <p class="palabra-grande" id="palabra-escuchada"></p>
+      <div class="ilustracion" id="ilustracion-confirmar"></div>
       <button id="btn-repetir-audio" class="btn-mini">🔊 Escuchar de nuevo</button>
       <button id="btn-mi-voz" class="btn-mini" hidden>🎧 Escuchar mi voz</button>
       <div class="botones-confirmar">
@@ -115,6 +124,7 @@
     </section>
 
     <section id="escena-deletrear" class="escena" hidden>
+      <div class="avatar" id="avatar" aria-hidden="true">🐶</div>
       <div class="slots" id="slots"></div>
       <div class="alfabeto" id="alfabeto"></div>
     </section>
