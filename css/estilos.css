@@ -1,3 +1,11 @@
+@font-face{
+  font-family: 'Playwrite CL';
+  src: url('../fonts/playwrite-cl.woff2') format('woff2-variations');
+  font-weight: 100 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root{
   --crema: #FFF6E2;
   --papel: #FFFFFF;
@@ -564,7 +572,12 @@ body{
   color: var(--teal-oscuro);
   transition: border-color .2s ease;
 }
-.slot.lleno{ border-color: var(--teal); }
+.slot.lleno{
+  border-color: var(--teal);
+  font-family: 'Playwrite CL', cursive;
+  font-weight: 400;
+  font-size: 2.1rem;
+}
 .slot.pista{ color: var(--tinta-suave); opacity:0.55; border-bottom-style: dashed; }
 
 .alfabeto{

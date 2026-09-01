@@ -998,7 +998,8 @@
     const letra = wordArr[idx];
 
     const terminar = () => {
-      slotEl.textContent = letra;
+      // La letra ya "escrita" se muestra en cursiva, con minúscula salvo la inicial de la palabra.
+      slotEl.textContent = idx === 0 ? letra : letra.toLowerCase();
       slotEl.classList.remove('pista');
       slotEl.classList.add('lleno');
       decirLetra(letra);
